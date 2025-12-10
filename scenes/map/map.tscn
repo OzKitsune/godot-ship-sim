@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3 uid="uid://golno0p7ebt"]
+
+[ext_resource type="Script" uid="uid://csmh0tvblx67t" path="res://scenes/map/Grid.cs" id="1_sxf4j"]
+[ext_resource type="Script" uid="uid://dq22xu801g20b" path="res://scenes/map/Map.cs" id="1_tqkkf"]
+
+[node name="Map" type="Control" node_paths=PackedStringArray("Grid")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_tqkkf")
+Grid = NodePath("Grid")
+
+[node name="Grid" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 0)
+script = ExtResource("1_sxf4j")
+LineWidth = 4.0
