@@ -11,7 +11,8 @@ public partial class Grid : ColorRect
     private Font _font;
     private Vector2? _lastClickWorldPos = null;
     private Rect2 _gridArea;
-    private float _minorLineWidth = 1.0f;
+    private float _currentMajorLineWidth = 1.0f;
+    private float _currentMinorLineWidth = 1.0f;
 
     [ExportCategory("Настройки сетки")]
     [Export] public float GridSizeWorld { get; private set; } = 100.0f;
@@ -36,8 +37,6 @@ public partial class Grid : ColorRect
 
     public override void _Ready()
     {
-        _minorLineWidth = LineWidth / 2;
-
         _camera = GetViewport().GetCamera2D();
         _font = GetThemeDefaultFont();
 
@@ -47,6 +46,11 @@ public partial class Grid : ColorRect
     public void UpdateGrid(Vector2 centerPosition)
     {
         _shipPosition = centerPosition;
+
+        _currentMajorLineWidth = LineWidth;
+        //_currentMajorLineWidth = LineWidth * _camera.Zoom.X;
+        _currentMinorLineWidth = _currentMajorLineWidth / 2;
+
         QueueRedraw();
     }
 
@@ -86,9 +90,15 @@ public partial class Grid : ColorRect
 
                 bool isMajor = Mathf.Abs(Mathf.PosMod(worldX, majorGridStep)) < 0.01f;
                 var color = isMajor ? MajorLineColor : MinorLineColor;
-                float width = isMajor ? LineWidth : _minorLineWidth;
+                float width = isMajor ? _currentMajorLineWidth : _currentMinorLineWidth;
 
                 DrawLine(from, to, color, width);
+
+                // Если приближение камеры слишком маленькое, скрываем минорный текст.
+                if (_camera.Zoom.X <= 0.3 && !isMajor) 
+                {
+                    continue;
+                }
 
                 // Текст координат.
                 string xText = worldX.ToString();
@@ -120,9 +130,15 @@ public partial class Grid : ColorRect
 
                 bool isMajor = Mathf.Abs(Mathf.PosMod(worldY, majorGridStep)) < 0.01f;
                 var color = isMajor ? MajorLineColor : MinorLineColor;
-                float width = isMajor ? LineWidth : _minorLineWidth;
+                float width = isMajor ? _currentMajorLineWidth : _currentMinorLineWidth;
 
                 DrawLine(from, to, color, width);
+
+                // Если приближение камеры слишком маленькое, скрываем минорный текст.
+                if (_camera.Zoom.X <= 0.3 && !isMajor)
+                {
+                    continue;
+                }
 
                 // Текст координат.
                 string yText = worldY.ToString();
