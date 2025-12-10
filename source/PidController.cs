@@ -2,7 +2,7 @@ using Godot;
 using System;
 
 /// <summary>
-/// Простой PID контроллер для плавного управления.
+/// Простой PID контроллер.
 /// </summary>
 public class PidController
 {
