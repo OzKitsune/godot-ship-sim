@@ -19,18 +19,18 @@ public partial class CameraZoom : Camera2D
         }
     }
 
-    private void ZoomIn() 
+    private void ZoomIn()
     {
-        var new_zoom = Zoom.X + _step;
-        if (new_zoom > _minZoom && new_zoom < _maxZoom) 
-        {
-            Zoom = new Vector2(new_zoom, new_zoom);
-        }
+        SetZoom(Zoom.X + _step);
     }
 
     private void ZoomOut()
     {
-        var new_zoom = Zoom.X - _step;
+        SetZoom(Zoom.X - _step);
+    }
+
+    private void SetZoom(float new_zoom)
+    {
         if (new_zoom > _minZoom && new_zoom < _maxZoom)
         {
             Zoom = new Vector2(new_zoom, new_zoom);
