@@ -15,7 +15,7 @@ MainEnginePower = 160.0
 MaxSpeed = 200.0
 BrakingFactor = 0.6
 AccelerationResponse = 0.8
-BrakingDistanceMultiplier = 0.8
+BrakingDistanceMultiplier = 0.6
 RotationD = 0.8
 ThrustP = 0.8
 
