@@ -5,10 +5,10 @@
 [ext_resource type="PackedScene" uid="uid://golno0p7ebt" path="res://scenes/map/map.tscn" id="2_ytiva"]
 [ext_resource type="Script" uid="uid://c4hbho7xcgo5h" path="res://source/CameraZoom.cs" id="3_j5lb4"]
 
-[node name="Demo" type="Node2D" node_paths=PackedStringArray("Ship", "Map")]
+[node name="Demo" type="Node2D" node_paths=PackedStringArray("_ship", "_map")]
 script = ExtResource("1_dar0o")
-Ship = NodePath("Ship")
-Map = NodePath("CanvasLayer/Map")
+_ship = NodePath("Ship")
+_map = NodePath("CanvasLayer/Map")
 
 [node name="Ship" parent="." instance=ExtResource("1_d6po2")]
 MainEnginePower = 160.0
