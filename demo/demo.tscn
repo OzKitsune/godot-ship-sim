@@ -1,0 +1,26 @@
+[gd_scene load_steps=4 format=3 uid="uid://bfa5lqstvljww"]
+
+[ext_resource type="PackedScene" uid="uid://ba4f15elxk641" path="res://scenes/ship/ship.tscn" id="1_d6po2"]
+[ext_resource type="Script" uid="uid://dgsraa5qv3yj0" path="res://demo/Demo.cs" id="1_dar0o"]
+[ext_resource type="PackedScene" uid="uid://golno0p7ebt" path="res://scenes/map/map.tscn" id="2_ytiva"]
+
+[node name="Demo" type="Node2D" node_paths=PackedStringArray("Ship", "Map")]
+script = ExtResource("1_dar0o")
+Ship = NodePath("Ship")
+Map = NodePath("CanvasLayer/Map")
+
+[node name="Ship" parent="." instance=ExtResource("1_d6po2")]
+MainEnginePower = 160.0
+MaxSpeed = 200.0
+AccelerationResponse = 0.8
+RotationResponse = 0.2
+BrakingDistanceMultiplier = 0.8
+RotationD = 0.8
+ThrustP = 0.8
+
+[node name="Camera2D" type="Camera2D" parent="Ship"]
+zoom = Vector2(0.5, 0.5)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Map" parent="CanvasLayer" instance=ExtResource("2_ytiva")]
