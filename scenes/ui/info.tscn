@@ -14,15 +14,17 @@ script = ExtResource("1_4yc5t")
 _label = NodePath("PanelContainer/MarginContainer/Label")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
+modulate = Color(1, 1, 1, 0.78431374)
 layout_mode = 1
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 31.0
-offset_bottom = 53.0
+offset_left = 60.0
+offset_top = 60.0
+offset_right = 81.0
+offset_bottom = 103.0
 mouse_filter = 2
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
@@ -30,3 +32,4 @@ theme_override_constants/margin_bottom = 10
 
 [node name="Label" type="Label" parent="PanelContainer/MarginContainer"]
 layout_mode = 2
+theme_override_colors/font_color = Color(0.53037053, 0.76435727, 0.9321457, 1)
