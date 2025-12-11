@@ -230,8 +230,15 @@ public partial class Ship : CharacterBody2D
     /// <summary>
     /// Включить автопилот и установить цель.
     /// </summary>
-    public void EnableAutopilot(Vector2 target)
+    /// <param name="target"></param>
+    /// <returns>Удалось ли включить автопилот.</returns>
+    public bool EnableAutopilot(Vector2 target)
     {
+        if (CheckManualInput()) 
+        {
+            return false;
+        }
+
         _autopilotEnabled = true;
         _autopilotTarget = target;
 
@@ -241,6 +248,8 @@ public partial class Ship : CharacterBody2D
         EmitSignal(SignalName.AutopilotEngaged, target);
 
         GD.Print($"Автопилот включен. Цель: {target}");
+
+        return true;
     }
 
     /// <summary>
@@ -303,7 +312,6 @@ public partial class Ship : CharacterBody2D
         return $"Скорость: {Velocity.Length():F1}\n" +
                $"Тяга: {_currentForwardThrust:F2}\n" +
                $"Поворот: {_currentRotationThrust:F2}\n" +
-               $"Направление: {Mathf.RadToDeg(Rotation):F1}°\n" +
-               $"Автопилот: {autopilotStatus}";
+               $"Направление: {Mathf.RadToDeg(Rotation):F1}°";
     }
 }
