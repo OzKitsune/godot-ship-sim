@@ -15,8 +15,6 @@ public partial class Demo : Node2D
 
     private void OnGridClicked(Vector2 worldPosition)
     {
-        GD.Print($"Grid clicked: {worldPosition}");
-
         _ship.EnableAutopilot(worldPosition);
     }
 
