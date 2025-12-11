@@ -296,7 +296,7 @@ public partial class Ship : CharacterBody2D
                $"Скорость: {Velocity.Length():F1}";
     }
 
-    private string GetDebugInfo()
+    public string GetDebugInfo()
     {
         string autopilotStatus = _autopilotEnabled ? "ВКЛ" : "ВЫКЛ";
 
