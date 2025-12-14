@@ -1,5 +1,7 @@
 using Godot;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 public partial class Ship : CharacterBody2D
 {
@@ -25,7 +27,9 @@ public partial class Ship : CharacterBody2D
     private Vector2 _autopilotTarget = Vector2.Zero;
     private PidController _rotationPID;
     private PidController _thrustPID;
-    private bool _autopilotStoping = false;
+
+    private CancellationTokenSource _stoppingCTS;
+    private bool _stopping = false;
 
     [ExportCategory("Двигатели")]
     [Export] public float MainEnginePower { get; private set; } = 800.0f;
@@ -66,7 +70,10 @@ public partial class Ship : CharacterBody2D
 
         if (hasManualInput)
         {
-            _autopilotStoping = false;
+            if (_stoppingCTS?.IsCancellationRequested == false)
+            {
+                _stoppingCTS?.Cancel();
+            }
             DisableAutopilot(false);
         }
 
@@ -95,6 +102,11 @@ public partial class Ship : CharacterBody2D
 
     private void HandleInput(float delta)
     {
+        if (_stopping) 
+        {
+            return;
+        }
+
         // Управление тягой.
         if (Input.IsActionPressed(INPUT_FORWARD))
         {
@@ -134,6 +146,9 @@ public partial class Ship : CharacterBody2D
         // Проверка достижения цели.
         if (distance <= ArrivalThreshold)
         {
+            _stoppingCTS?.Dispose();
+            _stoppingCTS = new CancellationTokenSource();
+            _ = StoppingTask(_stoppingCTS.Token);
             DisableAutopilot(true);
             return;
         }
@@ -178,7 +193,7 @@ public partial class Ship : CharacterBody2D
 
     private void ApplyInertiaToControls(float delta)
     {
-        if (_targetForwardThrust != 0 || _autopilotStoping)
+        if (_targetForwardThrust != 0 || _stopping)
         {
             _currentForwardThrust = Mathf.Lerp(_currentForwardThrust, _targetForwardThrust, AccelerationResponse * delta);
         }
@@ -186,7 +201,7 @@ public partial class Ship : CharacterBody2D
         // Вычисление фактора скорости при помощи функции сглаживания.
         // Изменяется от 0 к 1 в зависимости от текущей скорости и используется в вычислении силы поворота.
         float speedFactor = EaseOutQuad((1 - _currentSpeed / MaxSpeed));
-        if (_targetRotationThrust != 0 || _autopilotStoping)
+        if (_targetRotationThrust != 0 || _stopping)
         {
             _currentRotationThrust = Mathf.Lerp(_currentRotationThrust, _targetRotationThrust, RotationAccelerationResponse * delta * speedFactor);
         }
@@ -218,15 +233,31 @@ public partial class Ship : CharacterBody2D
     /// </summary>
     /// <param name="target"></param>
     /// <returns>Удалось ли включить автопилот.</returns>
-    public bool EnableAutopilot(Vector2 target)
+    public async Task EnableAutopilot(Vector2 target)
     {
         if (CheckManualInput()) 
         {
-            return false;
+            return;
+        }
+
+        _autopilotTarget = target;
+        _autopilotEnabled = false;
+
+        if (!_stopping)
+        {
+            _stoppingCTS?.Dispose();
+            _stoppingCTS = new CancellationTokenSource();
+            await StoppingTask(_stoppingCTS.Token);
+        }
+        else
+        {
+            while (_stopping)
+            {
+                await ToSignal(GetTree(), SceneTree.SignalName.PhysicsFrame);
+            }
         }
 
         _autopilotEnabled = true;
-        _autopilotTarget = target;
 
         _rotationPID.Reset();
         _thrustPID.Reset();
@@ -234,8 +265,6 @@ public partial class Ship : CharacterBody2D
         EmitSignal(SignalName.AutopilotEngaged, target);
 
         GD.Print($"Автопилот включен. Цель: {target}");
-
-        return true;
     }
 
     /// <summary>
@@ -249,7 +278,6 @@ public partial class Ship : CharacterBody2D
         _autopilotEnabled = false;
         _autopilotTarget = Vector2.Zero;
 
-        _autopilotStoping = true;
         _targetForwardThrust = 0;
         _targetRotationThrust = 0;
 
@@ -266,6 +294,33 @@ public partial class Ship : CharacterBody2D
         }
     }
 
+    private async Task StoppingTask(CancellationToken token)
+    {
+        GD.Print("Начало торможения.");
+        _stopping = true;
+
+        while (IsInstanceValid(this) && !token.IsCancellationRequested)
+        {
+            if (Mathf.Abs(_currentSpeed) <= 10.0f && Mathf.Abs(_currentRotationThrust) <= 0.01)
+            {
+                GD.Print("Торможение окончено.");
+                _stopping = false;
+                break;
+            }
+
+            _targetForwardThrust = -_currentForwardThrust;
+            _targetRotationThrust = -_currentRotationThrust;
+
+            await ToSignal(GetTree(), SceneTree.SignalName.PhysicsFrame);
+        }
+
+        if (token.IsCancellationRequested)
+        {
+            GD.Print("Задача торможения отменена.");
+            _stopping = false;
+        }
+    }
+
     private Vector2 GetForwardVector()
     {
         return Vector2.Up.Rotated(Rotation);
@@ -274,6 +329,12 @@ public partial class Ship : CharacterBody2D
     private float EaseOutQuad(float t)
     {
         return t * (2 - t);
+    }
+
+    public override void _ExitTree()
+    {
+        _stoppingCTS?.Cancel();
+        _stoppingCTS?.Dispose();
     }
 
     /// <summary>
@@ -302,6 +363,7 @@ public partial class Ship : CharacterBody2D
         return $"Скорость: {Velocity.Length()}\n" +
                $"Тяга: {_currentForwardThrust}\n" +
                $"Поворот: {_currentRotationThrust}\n" +
-               $"Направление: {Mathf.RadToDeg(Rotation):F1}°";
+               $"Направление: {Mathf.RadToDeg(Rotation):F1}°\n" +
+               $"Торможение: {_stopping}";
     }
 }
