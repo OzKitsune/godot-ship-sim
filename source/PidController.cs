@@ -34,18 +34,6 @@ public class PidController
         _outputLimit = 1.0f;
     }
 
-    public float OutputLimit
-    {
-        get 
-        {
-            return _outputLimit;
-        }
-        set 
-        {
-            _outputLimit = Mathf.Max(0.1f, value);
-        } 
-    }
-
     /// <summary>
     /// Обновить PID контроллер.
     /// </summary>
