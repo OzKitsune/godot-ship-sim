@@ -36,7 +36,6 @@ public partial class Ship : CharacterBody2D
     [ExportCategory("Инерция")]
     [Export] public float AccelerationResponse { get; private set; } = 2.0f;
     [Export] public float RotationAccelerationResponse { get; private set; } = 1.0f;
-    [Export] public float RotationBrakeResponse { get; private set; } = 2.0f;
 
     [ExportCategory("Автопилот - Настройки")]
     [Export] public float ArrivalThreshold = 50.0f;
@@ -184,11 +183,12 @@ public partial class Ship : CharacterBody2D
             _currentForwardThrust = Mathf.Lerp(_currentForwardThrust, _targetForwardThrust, AccelerationResponse * delta);
         }
 
+        // Вычисление фактора скорости при помощи функции сглаживания.
+        // Изменяется от 0 к 1 в зависимости от текущей скорости и используется в вычислении силы поворота.
+        float speedFactor = EaseOutQuad((1 - _currentSpeed / MaxSpeed));
         if (_targetRotationThrust != 0 || _autopilotStoping)
         {
-            _currentRotationThrust = Mathf.Lerp(_currentRotationThrust, _targetRotationThrust, RotationAccelerationResponse * delta);
-
-            //_currentRotationThrust = Mathf.Lerp(_currentRotationThrust, _targetRotationThrust, RotationBrakeResponse * delta);
+            _currentRotationThrust = Mathf.Lerp(_currentRotationThrust, _targetRotationThrust, RotationAccelerationResponse * delta * speedFactor);
         }
     }
 
@@ -199,18 +199,9 @@ public partial class Ship : CharacterBody2D
         Rotation += rotationAcceleration * delta;
 
         // Расчёт ускорения вперёд.
-        Vector2 forwardVector = Vector2.Up.Rotated(Rotation);
+        Vector2 forwardVector = GetForwardVector();
         float targetSpeed;
         targetSpeed = _currentForwardThrust * MaxSpeed;
-
-        //if (_targetForwardThrust != 0)
-        //{
-        //    targetSpeed = _currentForwardThrust * MaxSpeed;
-        //}
-        //else
-        //{
-        //    targetSpeed = _currentForwardThrust * BrakingFactor;
-        //}
 
         // Асимптотическое приближение скорости к целевой.
         _currentSpeed = Mathf.Lerp(_currentSpeed, targetSpeed, AccelerationResponse * delta);
@@ -275,9 +266,14 @@ public partial class Ship : CharacterBody2D
         }
     }
 
-    public Vector2 GetForwardVector()
+    private Vector2 GetForwardVector()
     {
         return Vector2.Up.Rotated(Rotation);
+    }
+
+    private float EaseOutQuad(float t)
+    {
+        return t * (2 - t);
     }
 
     /// <summary>
