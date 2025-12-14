@@ -16,10 +16,7 @@ public partial class Demo : Node2D
 
     private void OnGridClicked(Vector2 worldPosition)
     {
-        if (!_ship.EnableAutopilot(worldPosition)) 
-        {
-            _map.Grid.ClearMarker();
-        }
+        _ = _ship.EnableAutopilot(worldPosition);
     }
 
     private void OnShipAutopilotDisengaged(bool reachedTarget)
